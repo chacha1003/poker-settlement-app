@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>車車德州小工具 beta</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #1b1b1b;
+      color: #ffffff;
+      margin: 0;
+      padding: 20px;
+      font-size: 18px;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    .button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    input, select {
+      padding: 10px;
+      margin: 5px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: none;
+    }
+    .player-list {
+      margin-top: 20px;
+      text-align: left;
+    }
+    .player {
+      display: flex;
+      align-items: center;
+      background-color: #2b2b2b;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 10px;
+      border: 2px solid #fff;
+    }
+    .player-info {
+      flex-grow: 1;
+    }
+    .player-name {
+      font-size: 20px;
+      font-weight: bold;
+      color: #ff66cc;
+    }
+    .player-detail {
+      font-size: 16px;
+      color: #ffd700;
+    }
+    .history-record, .ranking, .settlement-detail {
+      background-color: #2a2a2a;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 30px;
+    }
+    .rank-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .rank-name {
+      font-weight: bold;
+      color: #00e6e6;
+      font-size: 18px;
+    }
+    .rank-amount {
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .rank-comment {
+      font-style: italic;
+      color: #ccc;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  
+    <div style="text-align: center;">
+      <h1 style="margin-bottom: 0;">車車德州小工具</h1>
+      <div style="font-size: 16px; color: #888;">beta</div>
+    </div>
+    
+<div style="font-size: 14px; color: #888; margin-top: 20px; text-align: center;">
+  📌 温馨提示：本工具仅供娱乐参考，禁止用于任何形式的赌博或非法活动。<br>
+  本网页作者不参与任何金钱交易，仅提供德州扑克结算辅助功能，用于亲友间线下娱乐。<br>
+  使用本工具即表示您已知悉并同意合法、合规使用本程序。<br>
+  © 2025 本网页作者保留所有权利。
+</div>
+
+  <div class="header">
+    <div id="total-chips">总筹码: 0</div>
+    <div id="total-players">参与玩家: 0</div>
+  </div>
+  <div>
+    <label>1元 = <input type="number" inputmode="numeric" pattern="[0-9]*" step="1" inputmode="numeric" pattern="[0-9]*" step="1" id="chip-rate" value="10" /> 筹码</label>
+    <button class="button" onclick="updateChipRate()">更新比率</button>
+    <div id="rate-msg" style="color: lightgreen; display: none;">比率更新成功！</div>
+  </div>
+  <div>
+    <input type="text" id="player-name" placeholder="玩家姓名" />
+    <button class="button" onclick="addPlayer()">添加玩家</button>
+  </div>
+  <div>
+    <select id="player-select"></select>
+    <input type="number" inputmode="numeric" pattern="[0-9]*" step="1" inputmode="numeric" pattern="[0-9]*" step="1" id="buy-amount" placeholder="买入金额(元)" />
+    <button class="button" onclick="buyChips()">为玩家买入</button>
+    <button class="button" onclick="buyForAll()">全体玩家买入</button>
+  </div>
+  <div class="player-list" id="player-list"></div>
+  <div class="history-record">
+    <h3>历史买入记录</h3>
+    <table id="buy-history-table" style="width: 100%; color: #fff;">
+      <thead>
+        <tr><th>时间</th><th>玩家</th><th>金额</th><th>筹码</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="history-record">
+    <h3>结算</h3>
+    <div style="color: #aaa; font-size: 14px; margin-bottom: 10px;">请填入每位玩家当前剩余的筹码数量</div>
+    <div id="player-chips-inputs"></div>
+    
+  <div style="margin-top: 20px;">
+    <label><input type="checkbox" id="enable-water" onchange="toggleWater()" /> 启用抽水</label>
+    <input type="number" inputmode="numeric" pattern="[0-9]*" step="1" inputmode="numeric" pattern="[0-9]*" step="1" id="water-percent" value="10" style="width: 60px;" disabled />%
+  </div>
+
+    <button class="button" onclick="calculateSettlement()">结算</button>
+    <div id="settlement-result"></div>
+  </div>
+  <div class="ranking" id="ranking"></div>
+  <div class="settlement-detail" id="settlement-detail"></div>
+</div>
+<script>
+let players = [];
+let chipRate = 10;
+let buyHistory = [];
+function updateChipRate() {
+  const val = parseInt(document.getElementById('chip-rate').value);
+  if (val > 0) chipRate = val;
+  const msg = document.getElementById('rate-msg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 2000);
+}
+function formatId(id) {
+  return id.toString().padStart(3, '0');
+}
+function getAvatar(name) {
+  return `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(name)}`;
+}
+function addPlayer() {
+  const name = document.getElementById('player-name').value.trim();
+  if (!name) return;
+  players.push({ id: players.length + 1, name, totalBuyIn: 0, chips: 0, buyRecords: [] });
+  updateUI();
+  document.getElementById('player-name').value = '';
+}
+function deletePlayer(id) {
+  players = players.filter(p => p.id !== id);
+  players.forEach((p, i) => p.id = i + 1);
+  updateUI();
+}
+function buyChips() {
+  const id = parseInt(document.getElementById('player-select').value);
+  const amountInput = document.getElementById('buy-amount');
+  const amount = parseInt(amountInput.value);
+  if (!amountInput.value || isNaN(amount) || amount <= 0) return;
+  if (!id) return;
+  const p = players.find(p => p.id === id);
+  p.totalBuyIn += amount;
+  p.chips += amount * chipRate;
+  p.buyRecords.push({ amount, chips: amount * chipRate });
+  buyHistory.push({ time: new Date().toLocaleTimeString(), name: p.name, amount, chips: amount * chipRate });
+  updateUI();
+}
+function buyForAll() {
+  const amountInput = document.getElementById('buy-amount');
+  const amount = parseInt(amountInput.value);
+  if (!amountInput.value || isNaN(amount) || amount <= 0) return;
+  players.forEach(p => {
+    p.totalBuyIn += amount;
+    p.chips += amount * chipRate;
+    p.buyRecords.push({ amount, chips: amount * chipRate });
+    buyHistory.push({ time: new Date().toLocaleTimeString(), name: p.name, amount, chips: amount * chipRate });
+  });
+  updateUI();
+}
+function withdrawLast(id) {
+  const p = players.find(p => p.id === id);
+  const last = p.buyRecords.pop();
+  if (!last) return;
+  p.totalBuyIn -= last.amount;
+  p.chips -= last.chips;
+  buyHistory = buyHistory.filter(h => !(h.name === p.name && h.amount === last.amount && h.chips === last.chips));
+  updateUI();
+}
+function updateUI() {
+  const playerSelect = document.getElementById('player-select');
+  const currentValue = playerSelect.value;
+  document.getElementById('player-list').innerHTML = players.map(p => `
+    <div class="player">
+      <img class="avatar" src="${getAvatar(p.name)}">
+      <div class="player-info">
+        <div class="player-name">${formatId(p.id)}. ${p.name}</div>
+        <div class="player-detail">买入: <strong style="color:#00e6e6;font-size:18px;">${p.totalBuyIn}元</strong> 筹码 <strong style="color:#ffd700;font-size:18px;">${p.chips} 💎</strong></div>
+        <button class="button" onclick="withdrawLast(${p.id})">撤回买入</button>
+        <button class="button" onclick="deletePlayer(${p.id})">删除</button>
+      </div>
+    </div>
+  `).join('');
+  playerSelect.innerHTML = players.map(p => `
+    <option value="${p.id}">${p.name}</option>
+  `).join('');
+  playerSelect.value = currentValue;
+  document.getElementById('buy-history-table').querySelector('tbody').innerHTML = buyHistory.map(h => `
+    <tr><td>${h.time}</td><td>${h.name}</td><td>${h.amount}</td><td>${h.chips}</td></tr>
+  `).join('');
+  document.getElementById('player-chips-inputs').innerHTML = players.map(p => `
+    <div style="margin: 5px;">
+      ${p.name}: <input type="number" inputmode="numeric" pattern="[0-9]*" step="1" inputmode="numeric" pattern="[0-9]*" step="1" id="chips-${p.id}" value="0">
+    </div>
+  `).join('');
+  document.getElementById('total-chips').innerText = `总筹码: ${players.reduce((s, p) => s + p.chips, 0)}`;
+  document.getElementById('total-players').innerText = `参与玩家: ${players.length}`;
+}
+function calculateSettlement() {
+  const results = players.map(p => {
+    const rawInput = document.getElementById(`chips-${p.id}`);
+const match = rawInput.value.match(/\d+/g);
+const clean = match ? match.join('') : '0';
+rawInput.value = clean;
+const remain = parseInt(clean);
+    const buyYuan = p.totalBuyIn;
+    const winChips = remain - buyYuan * chipRate;
+    const winYuan = winChips / chipRate;
+    return {
+      name: p.name,
+      avatar: getAvatar(p.name),
+      win: winYuan,
+      buyChips: buyYuan * chipRate,
+      remainChips: remain,
+      buyAmount: buyYuan,
+      water: (document.getElementById('enable-water').checked && winYuan > 0 ? winYuan * (parseFloat(document.getElementById('water-percent').value) / 100) : 0),
+      transferAmount: buyYuan + winYuan - (document.getElementById('enable-water').checked && winYuan > 0 ? winYuan * (parseFloat(document.getElementById('water-percent').value) / 100) : 0)
+    };
+  });
+  const sorted = [...results].sort((a, b) => b.win - a.win);
+  const winComments = ["今晚 MVP 🥇", "躺着赢 😎", "水上漂 🍀", "赢麻了 🤑", "把把大牌 🚀"];
+  const evenComments = ["刚好回本 🎯", "算你稳 🧘‍♂️"];
+  const loseComments = ["惨案建议报警 🚨", "血亏王者 💀", "今晚吃土 🧱", "太难了 😩", "锅甩不掉 🎒"];
+  const rankingHtml = sorted.map((r, i) => {
+    let comment = "";
+    if (r.win > 0) comment = winComments[i] || "赢了！🥳";
+    else if (r.win < 0) comment = loseComments[i] || "下次翻身！💪";
+    else comment = evenComments[i] || "平稳落地！🛬";
+    return `
+      <div class="rank-item">
+        <img class="avatar" src="${r.avatar}" style="width: 40px; height: 40px">
+        <span class="rank-name">${r.name}</span>
+        <span class="rank-amount" style="color:${r.win >= 0 ? 'lightgreen' : 'tomato'}">${r.win.toFixed(2)} 元</span>
+        <span class="rank-comment">${comment}</span>
+      </div>`;
+  }).join('');
+  document.getElementById('ranking').innerHTML = '<h3>输赢排行榜</h3>' + rankingHtml;
+
+  const detailHtml = results.map(r => `
+    <div style="margin: 6px 0;">
+      ${r.name}：买入金额 ${r.buyAmount} 元，买入筹码 ${r.buyChips}，剩余筹码 ${r.remainChips}，盈亏 <strong style="color:${r.win >= 0 ? 'lightgreen' : 'tomato'}">${r.win.toFixed(2)} 元</strong><br>
+      抽水金额：<strong style='color:orange'>${r.water.toFixed(2)} 元</strong><br>
+      局头应转：<strong>${r.transferAmount.toFixed(2)} 元</strong>
+    </div>
+  `).join('');
+  document.getElementById('settlement-detail').innerHTML = '<h3>结算汇总明细</h3>' + detailHtml;
+
+  const totalBuyChips = results.reduce((sum, r) => sum + r.buyChips, 0);
+  const totalRemainChips = results.reduce((sum, r) => sum + r.remainChips, 0);
+  let resultInfo = `<div style='margin-top: 10px;'>总买入筹码：${totalBuyChips}，结算筹码总数：${totalRemainChips}</div>`;
+  if (totalBuyChips !== totalRemainChips) {
+    const diff = Math.abs(totalBuyChips - totalRemainChips);
+    resultInfo += `<div style='color:red;font-weight:bold;'>坏账警告！差额：${diff} 筹码（约 ${(diff / chipRate).toFixed(2)} 元）</div>`;
+  }
+  document.getElementById('settlement-result').innerHTML = resultInfo;
+}
+
+function toggleWater() {
+  const enabled = document.getElementById("enable-water").checked;
+  document.getElementById("water-percent").disabled = !enabled;
+}
+
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('input[type=number]').forEach(input => {
+    input.addEventListener('keydown', function(e) {
+      if (['-', '+', 'e', 'E', '.'].includes(e.key)) {
+        e.preventDefault();
+      }
+    });
+  });
+});
+</script>
+</body>
+
+</html>
