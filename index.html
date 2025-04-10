@@ -124,7 +124,7 @@
     <div id="total-players">参与玩家: 0</div>
   </div>
   <div>
-    <label>1元 = <input type="text" inputmode="numeric" pattern="[0-9]*" step="1" inputmode="numeric" pattern="[0-9]*" step="1" id="chip-rate" value="10" / inputmode="numeric" pattern="[0-9]*" maxlength="6"> 筹码</label>
+    <label>1元 = <input type="number" inputmode="numeric" pattern="[0-9]*" step="1" inputmode="numeric" pattern="[0-9]*" step="1" id="chip-rate" value="10" /> 筹码</label>
     <button class="button" onclick="updateChipRate()">更新比率</button>
     <div id="rate-msg" style="color: lightgreen; display: none;">比率更新成功！</div>
   </div>
@@ -134,7 +134,7 @@
   </div>
   <div>
     <select id="player-select"></select>
-    <input type="text" inputmode="numeric" pattern="[0-9]*" step="1" inputmode="numeric" pattern="[0-9]*" step="1" id="buy-amount" placeholder="买入金额(元)" / inputmode="numeric" pattern="[0-9]*" maxlength="6">
+    <input type="number" inputmode="numeric" pattern="[0-9]*" step="1" inputmode="numeric" pattern="[0-9]*" step="1" id="buy-amount" placeholder="买入金额(元)" />
     <button class="button" onclick="buyChips()">为玩家买入</button>
     <button class="button" onclick="buyForAll()">全体玩家买入</button>
   </div>
@@ -155,7 +155,7 @@
     
   <div style="margin-top: 20px;">
     <label><input type="checkbox" id="enable-water" onchange="toggleWater()" /> 启用抽水</label>
-    <input type="text" inputmode="numeric" pattern="[0-9]*" step="1" inputmode="numeric" pattern="[0-9]*" step="1" id="water-percent" value="10" style="width: 60px;" disabled / inputmode="numeric" pattern="[0-9]*" maxlength="6">%
+    <input type="number" inputmode="numeric" pattern="[0-9]*" step="1" inputmode="numeric" pattern="[0-9]*" step="1" id="water-percent" value="10" style="width: 60px;" disabled />%
   </div>
 
     <button class="button" onclick="calculateSettlement()">结算</button>
@@ -250,7 +250,7 @@ function updateUI() {
   `).join('');
   document.getElementById('player-chips-inputs').innerHTML = players.map(p => `
     <div style="margin: 5px;">
-      ${p.name}: <input type="text" inputmode="numeric" pattern="[0-9]*" step="1" inputmode="numeric" pattern="[0-9]*" step="1" id="chips-${p.id}" value="0" inputmode="numeric" pattern="[0-9]*" maxlength="6">
+      ${p.name}: <input type="number" inputmode="numeric" pattern="[0-9]*" step="1" inputmode="numeric" pattern="[0-9]*" step="1" id="chips-${p.id}" value="0">
     </div>
   `).join('');
   document.getElementById('total-chips').innerText = `总筹码: ${players.reduce((s, p) => s + p.chips, 0)}`;
@@ -258,7 +258,11 @@ function updateUI() {
 }
 function calculateSettlement() {
   const results = players.map(p => {
-    const remain = parseInt(document.getElementById(`chips-${p.id}`).value) || 0;
+    const rawInput = document.getElementById(`chips-${p.id}`);
+const match = rawInput.value.match(/\d+/g);
+const clean = match ? match.join('') : '0';
+rawInput.value = clean;
+const remain = parseInt(clean);
     const buyYuan = p.totalBuyIn;
     const winChips = remain - buyYuan * chipRate;
     const winYuan = winChips / chipRate;
@@ -329,21 +333,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('input[type=text]').forEach(input => {
-    if (input.id === 'player-name') return; // 不限制名称输入框
-    input.addEventListener('keydown', function(e) {
-      if (['-', '+', '.', 'e', 'E'].includes(e.key)) e.preventDefault();
-    });
-    input.addEventListener('input', function(e) {
-      this.value = this.value.replace(/[^\d]/g, '');
-    });
-  });
-});
-</script>
 </body>
-
 
 </html>
